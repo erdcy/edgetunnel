@@ -1,0 +1,36 @@
+name: Upstream Sync
+
+on:
+  schedule:
+    # 每天 UTC 时间 0 点（北京时间早上 8 点）自动运行一次，可根据需要修改
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许在网页端手动触发运行
+
+permissions:
+  contents: write
+
+jobs:
+  sync_latest_from_upstream:
+    name: Sync latest commits from upstream repo
+    runs-on: ubuntu-latest
+    if: ${{ github.event.repository.fork }}
+
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Sync upstream changes
+        id: sync
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+        with:
+          # 这里填写你 Fork 仓库的默认分支名，通常是 main 或 master
+          target_sync_branch: main
+          # 这里填写原仓库（上游仓库）的默认分支名，通常是 main 或 master
+          upstream_sync_branch: main
+          # 填写真实原仓库的 Git 地址，例如 https://github.com
+          upstream_sync_repo: https://github.com/cmliu/edgetunnel
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 如果遇到代码冲突，强制使用原仓库覆盖（如果没改过代码建议设为 true）
+          test_mode: false
